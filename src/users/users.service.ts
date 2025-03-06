@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { User } from './entities/users.entity';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { ExternalUserDataService } from '../external-services/external-user-data.service';
 
 @Injectable()
 export class UsersService {
@@ -18,8 +19,14 @@ export class UsersService {
     },
   ];
 
-  findAll(): User[] {
-    return this.users;
+  constructor(
+    @Inject('EXTERNAL_USER_DATA_SERVICE')
+    private externalUserDataService: ExternalUserDataService,
+  ) {}
+
+  async findAll(): Promise<User[]> {
+    const externalUsers = await this.externalUserDataService.fetchUsers();
+    return [...this.users, ...externalUsers];
   }
 
   create(user: CreateUserDto) {
@@ -42,4 +49,5 @@ export class UsersService {
       id: this.users[index].id,
     };
   }
+  x;
 }
